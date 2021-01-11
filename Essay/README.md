@@ -1,3 +1,0 @@
-# iNote
-
-Personal study notes
