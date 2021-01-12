@@ -53,45 +53,45 @@ TCP/IP有三本书：
 
 菜鸟三
 
-一、Java编程入门类
-1、《Java编程思想》
-2、《Agile Java》中文版
+一、Java编程入门类  
+1、《Java编程思想》  
+2、《Agile Java》中文版  
 
-二、Java编程进阶类
-1、《重构 改善既有代码的设计》
-2、《测试驱动开发 by Example》
+二、Java编程进阶类  
+1、《重构 改善既有代码的设计》  
+2、《测试驱动开发 by Example》  
 
-三、Java架构师之路
-1、《Expert One-on-One J2EE Design and Development》
-2、《Expert One-on-One J2EE Development without EJB》
-3、《企业应用架构模式》
-4、《敏捷软件开发原则、模式与实践》
+三、Java架构师之路  
+1、《Expert One-on-One J2EE Design and Development》  
+2、《Expert One-on-One J2EE Development without EJB》  
+3、《企业应用架构模式》  
+4、《敏捷软件开发原则、模式与实践》  
 
-四、软件开发过程
-1、《UML精粹》
-2、《解析极限编程 拥抱变化》XP
-3、《统一软件开发过程》UP
-4、《敏捷建模》AM
+四、软件开发过程  
+1、《UML精粹》  
+2、《解析极限编程 拥抱变化》XP  
+3、《统一软件开发过程》UP  
+4、《敏捷建模》AM  
 
-五、软件项目管理
-1、《快速软件开发》
+五、软件项目管理  
+1、《快速软件开发》  
 
 菜鸟四
 
-入门类
-1.《java从入门到精通》（第3版）
-2.《java核心技术卷一》
-3.《java编程语言》
+入门类  
+1.《java从入门到精通》（第3版）  
+2.《java核心技术卷一》  
+3.《java编程语言》  
 
-进阶类
-1.《java编程思想》
-2.《java核心技术卷二》
-3.《疯狂java讲义》
+进阶类  
+1.《java编程思想》  
+2.《java核心技术卷二》  
+3.《疯狂java讲义》  
 
-JavaEE类
-1.《javaWeb整合开发王者归来》
-2.《spring 入门到精通》
-3.《JavaWeb开发详解》
+JavaEE类  
+1.《javaWeb整合开发王者归来》  
+2.《spring 入门到精通》  
+3.《JavaWeb开发详解》  
 
 必看
 
