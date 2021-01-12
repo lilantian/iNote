@@ -113,7 +113,7 @@ Flume是一个可扩展、适合复杂环境的海量日志收集系统。它将
 
 Flume以Agent为最小的独立运行单位，一个Agent就是一个JVM。单个Agent由Source、Sink和Channel三大组件构成
 
-![Flume](HADOOP.assets/20190712141031493.png)
+![Flume](HADOOP.assets/20190712141031493.png?raw=true)
 
 Source：从客户端收集数据，并传递给Channel。
 
