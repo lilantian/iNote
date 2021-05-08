@@ -42,7 +42,7 @@ F、改变会牵一发动全身，造成其他鸭子不想要的改变
 问：用一个类代表一个行为，感觉似乎有点奇怪。类不是应该代表某种“东西”吗？类不是应该同时具备状态“与”行为吗？（参考Duck设计模式）  
 答：在OO系统中，是的，类代表的东西一般都是既有状态（实例变量）又有方法。只是在本例中，碰巧“东西”是个行为。但是即使是行为，也仍然可以有状态和方法，例如，飞行的行为可以具有实例变量，记录飞行行为的属性（每秒翅膀拍动几下、最大高度和速度等）。
 
-```
+```java
 public abstract class Duck {
 	FlyBehavior flyBehavior;
 	QuackBehavior quackBehavior;
@@ -170,11 +170,12 @@ public class MiniDuckSimulator {
 观察者模式提供了一种对象设计，让主题和观察者之间松耦合。  
 
 ***设计原则***  
+
 1. 为了交互对象之间的松耦合设计而努力。
 
 松耦合的设计之所以能让我们建立有弹性的OO系统，能够应对变化，是因为对象之间的互相依赖讲到了最低。  
 
-```
+```java
 //在WeatherData中实现主题接口
 、、WeatherData实现了Subject接口
 public class WeatherData implements Subject {
@@ -224,7 +225,7 @@ public class WeatherData implements Subject {
 	//WeatherData的其他方法
 }
 ```
-```
+```java
 //===布告板===
 /**
 * 此布告板实现了Object接口，所以可以从WeatherData对象中获得改变
@@ -255,34 +256,212 @@ public class CurrentConditionDisplay implements Observer, DisplayElement {
 
 }
 ```
-```
+```java
 //利用内置java.util.Observerable重做气象站
 import java.util.Observable;
 import java.util.Observer;
 
+public class WeatherData extends Observable {
+	private float temperature;
+	private float humidity;
+	private float pressure;
+	
+	public WeatherData() {}
+	
+	public void setMeasurements(float temperature, float humidity, float pressure) {
+		this.temperature = temperature;
+		this.humidity = humidity;
+		this.pressure = pressure;
+		measurementsChanged();
+	}
+	
+	public float getTemperature() {
+		return temperature;
+	}
+	
+	public float getHumidity() {
+		return humidity;
+	}
+	
+	public float getPressure() {
+		return pressure;
+	}
+}
+```
+```java
+import java.util.Observable;
+import java.util.Observer;
 
+public class CurrentConditionsDisplay implements Observer, DisplayElement {
+	Observable observable;
+	private float temperature;
+	private float humidity;
+	
+	public CurrentConditionsDisplay(Observable observable) {
+		this.observable = observable;
+		observable.addObserver(this);
+	}
+	
+	public void update(Observable obs, Object arg) {
+		if (obs instanceof WeatherData) {
+			WeatherData weatherData = (WeatherData)obs;
+			this.temperature = weatherData.getTemperature();
+			this.humidity = weatherData.getHumidity();
+			display();
+		}
+	}
+	
+	public void display() {
+		System.out.println)("Current conditions:" + temperature + "F degrees and " + humidity + "% humidity");
+	}
+
+}
+```
+```java
+public class SwingObserverExample {
+	JFrame frame;
+	
+	public static void main(String[] args) {
+		SwingObserverExample example = new SwingObserverExample();
+		example.go();
+	}
+	
+	public void go() {
+		frame = new JFrame();
+		
+		JButton button = new JButton("Should I do it?");
+		button.addActionListener(new AngleListener());
+        button.addActionListener(new DevilListener());
+        frame.getContentPane().add(BorderLayout.CENTER, button);
+        //这里设置frame属性
+	}
+	
+	class AngleListener implements ActionListener {
+		public void adtionPerformed(ActionEvent event) {
+			System.out.println("Don't do it, you might regret it!");
+		}
+	}
+	
+	class DevilListener implements ActionListener {
+		public void adtionPerformed(ActionEvent event) {
+			System.out.println("Come on, do it!");
+		}/
+	}
+}
 ```
 
+- OO基础：抽象
+- OO原则
+	- 封装变化
+	- 多用组合，少用继承
+	- 针对接口编程，不针对实现编程
+	- 为交互对象之间的松耦合设计而努力
+- OO模式
+	- 观察者模式—在对象之间定义一对多的依赖，这样一来，当一个对象改变状态，依赖它的对象都会收到通知，并自动更新。
 
+要点：
+- 观察者定义了对象之间一对多的关系
+- 主题（也就是可观察者）用一个共同的接口来更新观察者
+- 观察者和可观察者之间用松耦合方式结合（loosecoupling），可观察者不知道观察者的细节，只知道观察者实现了观察者接口。
+- 使用此模式时，你可从被观察者出推（push）或拉（pull）数据（然而，推的凡事被认为更“正确”）
+- 有多个观察者时，不可以依赖特定的通知次序
+- Java有多种观察者模式的实现，包括了通用的java.util.Observable
+- 要注意java.util.Observable实现上多带来的一些问题
+- 如果有必要的话，可以实现自己的Observable，这并不难，不要害怕
+- Swing大量使用观察者模式，许多GUI框架也是如此。
+- 此模式也被应用在许多地方，例如：JavaBeans、RMI
 
+***设计原则***
+- 找出程序中会变化的方面，然后将其和固定不变的方面相分离
+- 针对接口编程，不针对实现编程
+- 多用组合，少用继承
 
+装饰者模式
+---
 
+***设计原则***
+开放-关闭原则：类应该对扩展开放，对修改关闭。
 
+虽然似乎有点矛盾，但是的确有一些技术可以允许在不直接修改代码的情况下对其进行扩展。  
+在选择需要被扩展的代码部分时要小心。每个地方都采用开放-关闭原则，是一种浪费，也没有必要。还会导致代码变得复杂且难以理解。
 
+**装饰者模式**动态地将责任附加到对象上。若要扩展功能，装饰者提供了比继承更有弹性的替代方案。  
 
+```java
+//扩展FilterInputStream类，并覆盖read()方法
+public class LowerCaseImputStream extends FilterInputStream {
+	public LowerCaseInputStream(InputStream in) {
+		super(in);
+	}
+	
+	public int read() throws IOException {
+		int c = super.read();
+		return (c == -1 ? c : Character.toLowerCase((char)c));
+	}
+	
+	public int read(byte[] b, int offset, int len) throws IOException {
+		int result = super.read(b, offset, len);
+		for (int i = offset; i < offset+result; i++) {
+			b[i] = (byte)Character.toLowerCase((char)b[i]);
+		}
+		return result;
+	}
 
+}
 
+//测试
+//test.txt
+// I know the Decorator Pattern therefore I RULE!
+public class InputTest {
+	public static void main(String[] args) throws IOException {
+		int c;
+		try {
+			InputStream in = new LowerCaseInputStream(new BufferedInputStream(new FileInputStream("test.txt")));
+			while((c = in.read()) >= 0) {
+				Syste.out.println((char)c);
+			}
+			in.close();
+		} catch (IOExcetion e) {
+			e.printStackTrace();
+		}
+	}
+}
+//结果...
+% java InputTest
+i know the decorator pattern therefore i rule!
+%
+```
 
+- OO基础
+	- 抽象
+	- 封装
+	- 多型
+	- 继承
+- OO原则
+	- 封装变化
+	- 多用组合，少用继承
+	- 针对接口编程，不针对实现编程
+	- 为交互对象之间的松耦合设计而努力
+	- 对扩展开放，对修改关闭
+- OO模式
+	- 策略模式
+	- 观察者模式
+	- 装饰者模式：动态地将责任附加到对象上。想要扩展功能，装饰者提供有别于继承的另一种选择。
 
+要点：
+- 继承属于扩展形式之一，但不见得是达到弹性设计得最佳方式
+- 在我们的设计中，应该允许行为可以被扩展，而无需修改现有的代码
+- 组合和委托可用于在运行时动态地加上新的行为
+- 除了继承，装饰者模式也可以让我们扩展行为
+- 装饰者模式意味着一群装饰者类，这些类用来包装具体组件
+- 装饰者类反映出被装饰的组件类型（事实上，他们具有相同的类型，都经过接口或继承实现）
+- 装饰者可以在被装饰者的行为前面与/或后面加上自己的行为，甚至被装饰者的行为整个去带掉，而达到特定的目的
+- 你可以用无数个装饰者包装一个组件
+- 装饰者一般对组件的客户是透明的，除非客户程序依赖于组件的具体类型
+- 装饰者会导致设计中出现许多小对象，如果过度使用，会让程序变得很复杂
 
-
-
-
-
-
-
-
-
+工厂模式
+---
 
 
 
