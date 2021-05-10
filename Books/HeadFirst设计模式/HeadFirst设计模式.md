@@ -1,4 +1,5 @@
-# 第一章
+第一章
+---
 
 - 知道OO基础，并不足以让你设计出良好的OO系统。
 - 良好的OO设计必须具备可复用、可扩充、可维护三个特性。
@@ -376,6 +377,7 @@ public class SwingObserverExample {
 - 针对接口编程，不针对实现编程
 - 多用组合，少用继承
 
+---
 装饰者模式
 ---
 
@@ -460,8 +462,260 @@ i know the decorator pattern therefore i rule!
 - 装饰者一般对组件的客户是透明的，除非客户程序依赖于组件的具体类型
 - 装饰者会导致设计中出现许多小对象，如果过度使用，会让程序变得很复杂
 
+---
 工厂模式
 ---
+
+```java
+public abstract class PizzaStore {
+
+	public Pizza orderPizza(String type) {
+		Pizza pizza;
+		
+		pizza = createPizza(type);
+		
+		pizza.prepare();
+		pizza.bake();
+		pizza.cut();
+		pizza.box();
+		
+		return pizza;
+	}
+	
+	protected abstract Pizza createPizza(String type);
+	
+	//其他方法
+}
+```
+工厂方法用来处理对象的创建，并将这样的行为封装在子类中。这样，客户程序中关于超类的代码就和子类对象创建代码解耦了。  
+```java
+/*
+工厂方法是抽象的，所以依赖子类来处理对象的创建
+工厂方法必须返回一个产品。超类中定义的方法，通常使用到工厂方法的返回值。
+工厂方法将客户（也就是超类中的代码）和实际创建具体产品的代码分割开来
+*/
+abstract Product factoryMethod(String type)
+```
+所有工厂模式都用来封装对象的创建。工厂方法模式（Factory Method Pattern）通过让子类决定该创建的对象是什么，来达到将对象创建的过程封装的目的。
+
+***工厂方法模式***定义了一个创建对象的接口，但由子类决定要实例化的类是哪一个。工厂方法让类把实例化推迟到子类。  
+
+问：当只有一个ConcreteCreator的时候，工厂方法模式有什么优点？  
+答：尽管只有一个具体创建者，工厂方法模式依然很有用，因为它帮助我们将产品的“实现”从“使用”中解耦。如果增加产品或者改变产品的实现，Creator并不会受到影响（因为Creator与任何ConcreteProduct之前都不是紧耦合）。
+
+问：工厂方法和创建者是否总是抽象的？  
+答：不，可以定义一个默认的工厂方法来产生某些具体的产品，这么一来，即使创建者没有任何子类，依然可以创建产品。
+
+问：每个商店基于传入的类型制造出不同种类的比萨。是否所有的具体创建者都必须如此？能不能只创建一种比萨？  
+答：这里所采用的方式称为“参数化工厂方法”。它可以根据传入的参数创建不同的对象。然而，工厂进场只产生一种对象，不需要参数化。模式的这两种形式都是有效的。
+
+问：利用字符串传入参数化的类型，似乎有点危险，然一吧Clam（蛤蜊）英文拼错，成了Calm（平静），要求供应“CalmPizza”，怎么办？  
+答：说的很对，这样的情形会造成所谓的“运行时错误”。有几个其他更复杂的技巧可以避开这个麻烦，在便一时期就将参数上的错误挑出来。比方说，你可以创建代表参数类型的对象和使用静态常量或者Java 5所支持的enum。
+
+问：对于简单工厂和工厂方法之间的差异，我依然感到困惑。他们看起来很类似，差别在于，在工厂方法中，返回比萨的类是子类。能解释一下吗？  
+答：子类的确看起来很像简单工厂。简单工厂把全部的事情，在一个地方都处理完了，然而工厂方法却是创建一个框架，让子类决定要如何实现。比方说，在工厂方法中，orderPizza()方法提供了一般的框架，以便创建比萨，orderPizza()方法依赖工厂方法创建具体类，并制造出实际的比萨。可通过继承PizzaStore类，决定实际制造出的比萨是什么。简单工厂的做法，可以将对象的创建封装起来，单思简单工厂不具备工厂方法的弹性，因为简单工厂不能变更正在创建的产品。
+
+**依赖倒置原则**  
+***设计原则：要依赖抽象，不要依赖具体类***
+
+几个指导方针，帮你避免在OO设计中违反依赖倒置原则：  
+- 变量不可以持有具体类的引用。  
+	如果使用new，就会持有具体类的引用。你可以改用工厂来避开这样的做法。
+- 不要让类派生自具体类。
+	如果派生自具体类，你就会依赖具体类。请派生自一个抽象（接口或抽象类）。
+- 不要覆盖基类中已实现的方法。
+	如果覆盖基类已实现的方法，那么你的基类就不是一个真正适合被继承的抽象。基类中已实现的方法，应该由所有的子类共享。
+
+```java
+public interface PizzaIngredientFactory {
+	public Dough createDough();
+	public Sauce CreateSauce();
+	public Cheese createCheese();
+	public Veggies[] createVeggies();
+	public Pepperoni createPepperoni();
+	public Clams createClam();
+}
+
+public class CheesePizza extends Pizza {
+	PizzaIngredientFactory ingredientFactory;
+	
+	//要制作比萨，需要工厂提供原料。所以每个比萨类都需要从构造器参数中的大一个工厂，并把这个工厂存储在一个实例变量中。
+	public CheesePizza(PizzaIngredientFactory ingredientFactory) {
+		this.ingredientFactory = ingredientFactory;
+	}
+	
+	void prepare() {
+		System.out.println("Preparing " + name);
+		dough = ingredientFactory.createFough();
+		sauce = ingredientFactory.createSauce();
+		cheese = ingredientFactory.createCheese();
+	}
+}
+```
+```java
+//1.首先我们需要一个纽约比萨店
+PizzaStore nyPizzaStore = new NYPizzaStore();
+//2.现在已经有个比萨店了，可以接受订单
+nyPizzaStore.orderPizza("cheese");
+//3.orderPizza()方法首先调用createPizza()方法
+Pizza pizza = createPizza("cheese");
+//4.当createPizza()方法被调用时，也就开始涉及原料工厂
+Pizza pizza = new CheesePizza(nyIngredientFactory);
+//5.接下来需要准备比萨。一旦调用了prepare()方法，工厂将被要求准备原料
+void prepare() {
+	dough = factory.createDough();
+	sauce = factory.createSauce();
+	cheese = factory.createCheese();
+}
+//6.最后，我们得到了准备好的比萨，orderPizza()就会接着烘烤、切片、装盒
+
+```
+
+**抽象工厂模式**：提供一个接口，用于创建相关或依赖对象的家族，而不需要明确指定具体类。  
+抽象工厂允许客户使用抽象的接口来创建一组相关的产品，而不需要知道（或关心）实际产出的具体产品是什么。这样一来，客户就从具体的产品中被解耦。  
+
+[MerMaid文档](https://mermaid-js.github.io/mermaid/#/)  
+
+要点：
+- 所有的工厂都是用来封装对象的创建。
+- 简单工厂，虽然不是真正的设计模式，但仍不失为一个简单的方法，可以将客户程序从具体类解耦。
+- 工厂方法使用集成：把对象的创建委托给子类，子类实现工厂方法来创建对象。
+- 抽象工厂使用对象组合：对象的创建被实现在工厂接口所暴露出来的方法中。
+- 所有工厂模式都通过减少应用程序和具体类之间的依赖促进松耦合。
+- 工厂方法允许类将实例化延迟到子类进行。
+- 抽象工厂创建相关的对象家族，而不需要依赖它们的具体类。
+- 依赖倒置原则，指导我们避免依赖具体类型，而要尽量依赖抽象。
+- 工厂是很有威力的技巧，帮助我们针对抽象编程，而不要针对具体类编程。
+
+---
+单件模式
+---
+
+**单件模式（Singleton Pattern）：用来创建独一无二的，只能有一个实例的对象的入场券。**  
+***单件模式***确保一个类只有一个实例，并提供一个全局访问点。  
+
+```java
+public class Singleton {
+	private static Singleton uniqueInstance;
+	
+	private Singleton() {}
+	
+	public static synvhronized Singleton getInstance() {
+		if (uniqueInstance == null) {
+			uniqueInstance = new Singleton();
+		}
+		return uniqueInstance;
+	}
+	
+}
+```
+
+1. 如果getInstance()的性能对应用程序不是很关键，就什么别做  
+没错，如果你的应用程序可以接受getInstance()造成的额外负担，就忘了这件事吧。同步getInstance()的方法既简单又有效。但是你必须知道，同步一个方法可能造成程序执行效率下降100背。因此，如果将getInstance()的程序使用在频繁运行的地方，你可能就得重新考虑了。
+2. 使用“急切”创建实例，而不用延迟实例化的做法  
+```java
+public class Singleton {
+	private static Singleton uniqueInstance = new Singleton();
+	
+	private Singleton() {}
+	
+	public static Singleton getInstance() {
+		return uniqueInstance;
+	}
+}
+```
+3. 用“双重检查加锁”，在getInstance()减少使用同步  
+利用双重检查加锁（double-checked locking），首先检查是否实例已经创建了，如果尚未创建，“才”进行同步。这样一来，只有第一次会同步，这正是我们想要的。  
+```java
+/*
+volatile关键词确保：当uniqueInstance变量被初始化成Singleton实例时，
+多个线程正确地处理uniqueInstance变量
+*/
+public class Singleton {
+	private volatile static Singleton uniqueInstance;
+	
+	private Singleton() {}
+	
+	public static Singleton getInstance() {
+	/*
+	检查实例，如果不存在，就进入同步区块。
+	只有第一次才彻底执行这里的代码。
+	*/
+		if (uniqueInstance == null) {
+			synchronized (Singleton.class) {
+				//进入区块后，再检查一次。如果仍是null，才创建实例。
+				if (uniqueInstance == null) {
+					uniqueInstance = new Singleton();
+				}
+			}
+		}
+		return uniqueInstance;
+	}
+}
+```
+要点
+- 单件模式确保程序中一个类最多只有一个实例。
+- 单件模式也提供访问这个实例的全局点。
+- 在Java中实现单件模式需要私有的构造器、一个静态方法和一个静态变量。
+- 确定在性能和资源上的限制，然后小心地选择适当的方案来实现单件，以解决多线程的问题（我们必须认定所有的程序都是多线程的）。
+- 如果不是采用第五版的Java 2，双重检查加锁实现会失效。
+- 小心，你如果使用多个类加载器，可能导致单件失效而产生多个实例。
+- 如果使用JVM 1.2或之前的banner，你必须建立单件注册表，以免垃圾收集器将单件回收。
+
+---
+封装调用：命令模式
+---
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
