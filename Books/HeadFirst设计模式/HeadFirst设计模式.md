@@ -666,36 +666,323 @@ public class Singleton {
 封装调用：命令模式
 ---
 
+***命令模式***将“请求”封装成对象，以便使用不同的请求、队列或者日志来参数化其他对象。命令模式也支持可撤销的操作。  
 
+```java
+public class RemoteControlWithUndo {
+	Command[] onConnands;
+    Command[] offConnands;
+    //前一个命令将被记录在这里
+    Command undoCommand;
+    
+    public RemoteControlWithUndo() {
+    	onCommands = new Command[7];
+    	offCommands = new Command[7];
+    	
+    	Command noCommand = new NoCommand;
+    	for (int i = 0; i < 7; i++) {
+    		onCommands[i] = noCommand;
+            offCommands[i] = noCommand;
+    	}
+    	//一开始，并没有所谓的“前一个命令”，所以将它设置成NoCommand的对象
+    	undoCommand = noCommand;
+    }
+    
+    public void setCommand(int slot, Command onCommand, Command offCommand) {
+    	onCommands[slot] = onCommand;
+    	offCommands[slot] = offCommand;
+    }
+    
+    public void onButtonWasPushed(int slot) {
+    	onCommands[slot].execute();
+    	/*
+    	当按下按钮，我们取得这个命令，并优先执行它，
+    	然后将它记录在undoCommand实例变量中。不管
+    	是“开”或“关”命令，我们的处理方法都是一样的。
+    	*/
+    	undoCommand = onCommands[slot];
+    }
+    
+    public void offButtonWasPushed(int slot) {
+    	offCommands[slot].execute();
+        /*
+    	当按下按钮，我们取得这个命令，并优先执行它，
+    	然后将它记录在undoCommand实例变量中。不管
+    	是“开”或“关”命令，我们的处理方法都是一样的。
+    	*/
+    	undoCommand = offCommands[slot];
+    }
+    
+    public void undoButtonWasPushed() {
+    	/*
+    	当按下撤销按钮，我们调用undoCommand实例变
+    	量的undo()方法，就可以倒转前一个命令。
+    	*/
+    	undoCommand.undo();
+    }
+    
+    public String toString() {
+    	//toString...
+    }
+}
+```
 
+命令模式的更多用途：  
+- 队列请求
+- 日志请求
 
+要点：
+- 命令模式将发出请求的对象和执行请求的对象解耦。
+- 在被解耦的两者之间是通过命令对象进行沟通的。命令对象封装了接收者和一个或一组动作。
+- 调用者通过调用命令对象的execute()发出请求，这会使得接收者的动作被调用。
+- 调用者可以接受命令当作参数，甚至在运行时动态地进行。
+- 命令可以支持撤销，做法是实现一个undo()方法来回到execute()被执行前的状态。
+- 宏命令是命令的一种简单的延伸，允许调用多个命令。宏方法也可以支持撤销。
+- 实际操作时，很常见使用“聪明”命令对象，也就是直接实现了请求，而不是将工作委托给接受者。
+- 命令也可以用来实现日志和事务系统。
 
+---
+适配器模式与外观模式
+---
 
+```java
+//包装了鸭子适配器的火鸡...
+public interface Duck {
+	public void quack();
+	public void fly();
+}
 
+public class MallardDuck implements Duck {
+	public void quack() {
+		System.out.pritln("Quack");
+	}
+	
+	public void fly() {
+		System.out.println("i'M flying");
+	}
+}
 
+public interface Turkey {
+	public void gobble();
+	public void fly();
+}
 
+public class WildTurkey implements Turkey {
+	public void gobble() {
+		System.out.println("Gobble gobble");
+	}
+	
+	public void fly() {
+		System.out.println("I'm flying a short distance");
+	}
+}
 
+publc class TurkeyAdapter implements Duck {
+	Turkey turKey;
+	
+	public TurkeyAdapter(Turkey turkey) {
+		this.turkey = turkey;
+	}
+	
+	public void quack() {
+		turkey.gobble();
+	}
+	
+	public void fly() {
+		for (int i = 0; i < 5; i++) {
+			turkey.fly();
+		}
+	}
+}
 
+public class DuckTestDrive {
+	public static void main(String[] args) {
+		MallardDuck duck = new MallardDuck();
+		
+		WildTurkey turkey = new WildTurkey();
+		Duck turkeyAdapter = new TurkeyAdapter(turkey);
+		
+		System.out.println("The Turkey says...");
+		turkey.gobble();
+		turkey.fly();
+		
+		System.out.println("\nThe Turkey says...");
+		testDuck(duck);
+		
+        System.out.println("\nThe TurkeyAdapter says...");
+		testDuck(turkeyAdapter;
+	}
+	
+	static void testDuck(Duck duck) {
+		duck.quack();
+		duck.fly();
+	}
+}
+```
 
+客户使用适配器的过程如下：  
+1. 客户通过目标接口调用适配器的方法对适配器发出请求。
+2. 适配器使用被适配者接口把请求转换成被适配者的一个或多个调用接口。
+3. 客户接受到调用的结果，但并未察觉这一切是适配器在起转换作用。
 
+***适配器模式***将一个类的接口，转换成客户期望的另一个接口。适配器让原本接口不兼容的类可以合作无间。  
 
+对象适配器和类适配器使用两种不同的适配方式：分别是组合与继承
 
+![image-20210519092004543](HeadFirst设计模式.assets/image-20210519092004543.png)
 
+对象适配器：  
+- 使用组合。可以适配某个类，也可以适配该类的任何子类
 
+类适配器：  
+- 使用继承。只能够采用某个特定的被适配类。但是有个很大的优点：不需要重新实现整个被适配者。必要的时候，可以覆盖被适配者的行为
 
+真实世界的适配器：
+- 旧世界的枚举器：  
+	早期的集合（collection）类型（例如：Vector、Stack、Hashtable）都实现了一个名为elements()的方法。该方法会返回一个Enumeration（举）。这个Enumeration接口可以逐一走过此集合内的每个元素，而无需知道他们在集合内是如何被管理的。
+- 新世界的迭代器：  
+	当Sun推出更新后的集合类时，开始使用了Iterator（迭代器）接口，这个接口和枚举接口很像，都可以让你遍历此级和类型内的每个元素，但不同的是，迭代器还提供了删除元素的能力。
 
+外观不只是简化了接口，也将客户从组件的子系统中解耦。  
+外观和适配器可以包装许多类，但是外观的意图是简化接口，而适配器的意图是将接口转换成不同接口。  
 
+***外观模式***提供了一个统一的接口，用来访问子系统中的一群接口。外观定义了一个高层接口，让子系统更容易使用。  
 
+设计原则：***“最少知识”原则***：只和你的密友谈话。  
+当你在设计一个系统，不管是任何对象，你都要注意它所交互的类有哪些，并注意它和这些类是如何交互的。  
+这个原则希望我们在设计中，不要让太多的类耦合在一起，免得修改系统中的一部分，会影响到其他部分。如果许多类之间相互依赖，那么这个系统就会变成一个易碎的系统，它需要花许多成本维护，也会因为太复杂而不容易被其他人了解。  
 
+要点：  
+- 当需要使用一个现有的类而其接口并不符合你的需要时，就使用适配器。
+- 当需要简化并统一一个很大的接口或者一群复杂的接口时，使用外观。
+- 适配器改变接口以符合客户的期望。
+- 外观嫁给你客户从一个复杂的子系统中解耦。
+- 实现一个适配器可能需要一番功夫，也可能不费功夫，视目标接口的大小与复杂度而定。
+- 实现一个外观，需要将子系统组合进外观中，然后将工作委托给子系统执行。
+- 适配器模式有两种形式：对象适配器和类适配器。类适配器需要用到多重继承。
+- 你可以为一个子系统实现一个以上的外观。
+- 适配器将一个对象包装起来以改变其接口；装饰者将一个对象包装起来以增加新的行为和责任；而外观将一群对象“包装”起来以简化其接口。
 
+---
+模板方法模式：封装算法
+---
 
+***模板方法模式***在一个方法中定义一个算法的骨架，而将一些步骤延迟到子类中。模板方法使得子类可以在不改变算法结构的情况下，重新定义算法中的某些步骤。
 
+```java
+public class CoffeeWithHook extends CaffeineBeverageWithHook {
+	
+	public void brew() {
+		System.out.printlm("Dripping Coffee through filter");
+	}
+	
+    public void addCondiments() {
+		System.out.println("Adding Sugar and Milk");
+	}
+	
+	public boolean customerWantsCondiments() {
+		String answer = getUserInput();
+		
+		if (answer.toLowerCase().startsWith("y")) {
+			return true;
+		} else {
+			return false;
+		}
+	}
 
+	private String getUserInput() {
+		String answer = null;
+		
+        System.out.print("Would you like milk and Sugar with your coffee (y/n)?");
+        
+        BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
+        try {
+        	answer = in.readLine();
+        } catch (IOException ioe) {
+        	System.out.println("IO error trying to read your answer");
+        }
+        if (answer == null) {
+        	return "no";
+        }
+        return answer;
+	}
+}
+```
 
+设计原则：***好莱坞原则***别调用我们，我们会调用你。  
+好莱坞原则可以给我们一种防止“依赖腐败”的方法。当高层组件依赖底层组件，而底层组件又依赖高层组件，而高层组件又依赖边侧组件，而边侧组件又依赖底层组件时，依赖腐败就发生了。在这种情况下，没有人可以轻易地搞懂系统是如何设计的。  
+在好莱坞原则之下，我们允许底层组件将自己挂钩到系统上，但是高层组件会决定什么时候和怎样使用这些底层组件。换句话说，高层组件对待底层组件的方式是“别调用我们，我们会调用你”。  
 
+```java
+public class Duck implements Comparable {
+	String name;
+	int weight;
+	
+	public Duck(String name, int weight) {
+		this.name = name;
+		this.weight = weight;
+	}
+	
+	public String toString() {
+		return name + " weight " + weight;
+	}
+	
+	public int comparaTo(Object object) {
+		Duck otherDuck = (Duck)object;
+		
+		if (this.weight < otherDuck.weight) {
+			return -1;
+		} else if (this.weight = otherDuck.weight) {
+			return 0;
+		} else {
+			return 1;
+		}
+	}
+}
 
+public class DuckSortTestDrive {
+	public static void main(String[] args) {
+		Duck[] ducks = {
+			new Duck("Daffy",8),
+            new Duck("Dewey",2),
+            new Duck("Howard",7),
+            new Duck("Louie",2),
+            new Duck("Donald",10),
+            new Duck("Huey",2)
+		};
+		
+		System.out.println("Before sorting:");
+		display(ducks);
+		
+		Arrays.sort(ducks);
+		
+		System.out.println("\nAfter sorting:");
+		display(ducks);
+	}
+	
+	public static void display(Duck[] ducks) {
+		for (int i = 0; i < ducks.length; i++) {
+			System.out.println(ducks[i]);
+		}
+	}
+}
+```
 
+要点：  
+- “模板方法”定义了算法的不住，把这些步骤的实现延迟到子类。
+- 模板方法模式为我们提供了一种代码复用的重要技巧。
+- 模板方法的抽象类可以定义具体方法、抽象方法和钩子。
+- 抽象方法由子类实现。
+- 钩子是一中方法，它在抽象类中不做事，或者只做默认的事情，子类可以选择不要去覆盖它。
+- 为了防止子类改变模板方法中的算法，可以将模板方法声明为final。
+- 好莱坞原则告诉我们，将策略权放在高层模板中，以便决定如何以及何时调用底层模块。
+- 你将在真实世界代码中看到模板方法模式的许多变体，不要期待他们全都是一眼就可以被你认出来的。
+- 策略模式和模板方法模式都封装算法，一个用组合，一个用继承。
+- 工厂方法是模板方法的一种特殊版本。
 
+---
+迭代器与组合模式：管理良好的集合
+---
 
 
 
