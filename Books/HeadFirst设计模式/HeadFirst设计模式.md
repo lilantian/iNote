@@ -984,20 +984,203 @@ public class DuckSortTestDrive {
 迭代器与组合模式：管理良好的集合
 ---
 
+在餐厅菜单中加入一个迭代器  
+想要在餐厅中加入一个迭代器，我们需要先定义迭代器接口：  
+```java
+public interface Iterator {
+	//会返回一个布尔值，让我们知道是否还有更多的元素
+	boolean hasNext();
+	//返回下一个元素
+	Object next();
+}
+```
+现在我们需要实现一个具体的迭代器，为擦你太能干菜单服务：  
+```java
+public class DinerMenuIterator implements Iterator {
+	MenuItem[] items;
+	int position = 0;
+	
+	public DinerMenuIterator(MenuItem[] items) {
+		this.items = items;
+	}
+	
+	public Object next() {
+		MenuItem menuItem = items[position];
+		position = position + 1;
+		return menuItem;
+	}
+	
+	public boolean hasNext() {
+		if (position >= items.length || items[position] == null) {
+			return false;
+		} else {
+			return true;
+		}
+	}
 
+}
+```
+用迭代器改写餐厅菜单  
+```java
+public class DinerMenu {
+	static final int MAX_ITEMS = 6;
+	int numberOfItems = 0;
+	MenuItem[] menuItems;
+	
+	//构造器在这里
+	
+	//addItem在这里
+	
+	public Iterator createIterator() {
+		return new DinerMenuIterator(menuItems);
+	}
+	
+	//菜单的其他方法在这里
+}
+```
+修正女招待的代码  
+```java
+public class Waitress {
+	PancakeHouseMenu pancakeHouseMenu;
+	DinerMenu dinerMenu;
+	
+	public Waitress(PancakeHouseMenu pancakeHouseMenu, DinerMenu dinerMenu) {
+		this.pancakeHouseMenu = pancakeHouseMenu;
+		this.dinerMenu = dinerMenu;
+	}
+	
+	public void printMenu() {
+		Iterator pancakeIterator = pancakeHouseMenu.createIterator();
+		Iterator dinerIterator = dinerMenu.createIterator();
+		System.out.println("MMENU\n----\nBREAKFAST");
+		printMenu(pancakeIterator);
+        System.out.println("\nLUNCH");
+        printMenu(dinerIterator);
+	}
+	
+	private void printMenu(Iterator iterator) {
+		while (iterator.hasNext()) {
+			MenuItem menuItem = (MenuItem)iterator.nex();
+			System.out.print(menuItem.getName() + ", ");
+            System.out.print(menuItem.getPrice() + " -- ");
+            System.out.print(menuItem.getDescription());
+		}
+	}
+	
+	//其他的方法
 
+}
+```
+```java
+//测试代码
+public class MenuTestDrive {
+	public static void main(String args[]) {
+		PancakeHouseMenu pancakeHouseMenu = new PancakeHouseMenu();
+		DinerMenu dinerMenu = new DingerMenu();
+		
+		Waitress waitress = new Waitress(pancakeHouseMenu, dinerMenu);
+		
+		waitress.printMenu();
+	}
+}
+```
+***迭代器模式***提供一种方法顺序访问一个聚合对象中的各个元素，而又不暴露其内部的表示。  
+迭代器模式让我们能游走于聚合内的每一个元素，而又不是暴漏其内部的表示。  
+把游走的任务放在迭代器上，而不是聚合上。这样简化了聚合的接口和实现，也让责任各得其所。  
 
+**单一责任**  
+如果我们允许我们的聚合实现它们内部的集合，以及相关的操作和遍历的方法，又会如何？我们已经知道这回增加聚合中的方法个数，但又怎样呢？为社会么这个么做不好？  
+想知道为什么，首先你需要认清楚，当我们允许一个类不但要完成自己的事情（管理某种聚合），还同时要担负更多的责任（例如遍历）时，我们就给了这个类两个变化的原因。如果这个集合改变的话，这个类也必须改变；如果我们遍历的方式改变的话，这个类也必须耕者改变。所以，再一次地，我们的老朋友“改变”又成了设计原则的中心：  
 
+***设计原则：一个类应该只有一个引起变化的原因***  
 
+类的每个责任都有改变的潜在区域。超过一个责任，意味着超过一个便便的区域。  
+这个原则告诉我们，尽量让每个类保持单一责任。  
 
+内聚（cohesion）这个术语你应该听过，它用来度量一个类或模块紧密地达到单一目的或责任。  
+但一个模块或一个类被设计成只支持一组相关的功能时，我们说它具有高内聚；反之，当被设计成支持一组不相关的功能时，我们说它具有低内聚。  
+内聚是一个比单一责任原则更普遍的概念，但两者其实关系是很紧密的。遵守这个原则的类具有很高的凝聚力，而且比背负许多责任的低内聚类更容易维护。  
 
+```java
+//重做咖啡厅代码
+public class CafeMenu implements Menu {
+	Hashtable menuItems = new Hashtable();
+	
+	public cafeMenu() {
+		//构造器的代码写在这里
+	}
+	
+	public void addItem(String name, String description, boolean vegetarian, double price) {
+		MenuItem menuItem = new MenuItem(name, descriptionm vegetarian, price);
+		menuItems.put(menuItem.getName(), menuItem);
+	}
+	
+	public Iterator createIterator() {
+		return menuItems.values().iterator();
+	}
+}
 
+//让女招待认识咖啡厅菜单
+public class Waitress {
+	Menu pancakeHouseMenu;
+	Menu dinerMenu;
+	Menu cafeMenu;
+	
+	public Waitress(Menu pancakeHouseMenu, Menu dinerMenu, Menu cafeMenu) {
+		this.pancakeHouseMenu = pancakeHouseMenu;
+		this.dinerMenu = dinerMenu;
+		this.cafeMenu = cafeMenu;
+	}
+	
+	public void printMenu() {
+		Iterator pancakeIterator = pancakeHouseMenu.createIterator();
+		Iterator dinerIterator = dinerMenu.createIterator();
+		Iterator cafeIterator = cafeMenu.createIterator();
+		System.out.println("MMENU\n----\nBREAKFAST");
+		printMenu(pancakeIterator);
+        System.out.println("\nLUNCH");
+        printMenu(dinerIterator);
+        System.out.println("\nDINNER");
+        printMenu(cafeIterator);
+	}
+	
+	private void printMenu(Iterator iterator) {
+		while (iterator.hashNext()) {
+			MenuItem menuItem = (MenuItem)iterator.nex();
+			System.out.print(menuItem.getName() + ", ");
+            System.out.print(menuItem.getPrice() + " -- ");
+            System.out.print(menuItem.getDescription());
+		}
+	}
+}
+```
 
+***组合模式***允许你将对象组合成树形结构来表现“整体/部分”层次结构。组合能让客户以一直的方式处理个别对象以及对象组合。  
 
+组合模式让我们能用树形方式创建对象的结构，树里卖你包含里组合以及个别的对象。  
+使用组合结构，我们能把相同的操作应用在组合和个别对象上。换句话说，在大多数情况下，我们可以忽略对象组合和个别对象之间的差别。  
 
+要点：  
+- 迭代器允许访问聚合的元素，而不需要暴漏它的内部结构。
+- 迭代器将遍历聚合的而工作封装进一个对象中。
+- 当使用迭代器的时候，我们依赖聚合提供遍历。
+- 迭代器提供了一个通用接口，让我们遍历聚合的项，当我们编码使用聚合的项时，就可以使用多态机制。
+- 我们应该努力让一个类只分配一个责任。
+- 组合模式提供一个结构，可同时包容个别对象和组合对象。
+- 组合模式允许客户对个别对象以及组合对象一视同仁。
+- 组合结构内的任意对象称为组件，组件可以时组合也可以是叶节点。
+- 在实现组合模式时，有许多设计上的折衷。你要根据需要平衡透明性和安全性。
 
+- 策略模式：封装可呼唤的行为，并使用委托决定使用哪一个  
+- 适配器模式：改变一个或多个类的接口  
+- 迭代器模式：提供一个方式来遍历集合，而无需暴露集合的实现
+- 外观模式：简化一群类的接口
+- 组合模式：客户可以将对象的集合以及个别的对象一视同仁
+- 观察者模式：当某个状态改变时，允许一群对象能被通知到
 
-
+---
+状态模式：事务的状态
+---
 
 
 
