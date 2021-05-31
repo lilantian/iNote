@@ -1182,12 +1182,106 @@ public class Waitress {
 状态模式：事务的状态
 ---
 
+```java
+//糖果机
+public class GumballMachine {
+	final static int SOLD_OUT = 0;
+	final static int NO_QUARTER = 1;
+	final static int HAS_QUARTER = 2;
+	final static int SOLD = 3;
+	
+	int state = SOLD_OUT;
+	int count = 0;
+	
+	public GumballMachine(int count) {
+		this.count = count;
+		if (count > 0) {
+			state = NO_QUARTER;
+		}
+	}
+	
+	public void insertQuarter() {
+		if (state == HAS_QUARTER) {
+			System.out.pritln("You can't insert another quarter");
+		} else if (state == NO_QUARTER) {
+			state = HAS_QUARTER;
+			System.out.pritln("You inserted a quarter");
+		} else if (state == SOLD_OUT) {
+			System.out.pritln("You can't insert a quarter, the machine is sold out");
+		} else if (state == SOLD) {
+			System.out.pritln("Please wait, we're already giving you gumball");
+		}
+	}
+	
+    public void ejectQuarter() {
+		if (state == HAS_QUARTER) {
+			System.out.pritln("Quarter returned");
+			state = NO_QUARTER;
+		} else if (state == NO_QUARTER) {
+			state = HAS_QUARTER;
+			System.out.pritln("You haven't inserted a quarter");
+		} else if (state == SOLD_OUT) {
+			System.out.pritln("Sorry, you already turned the crank");
+		} else if (state == SOLD) {
+			System.out.pritln("You can't eject, you haven't inserted a quarter yet");
+		}
+	}
+	
+	public void turnCrank() {
+		if (state == SOLD) {
+			System.out.pritln("Truning twice doesn't get you another gumball!");
+		} else if (state == NO_QUARTER) {
+			System.out.pritln("You turned but where's no quarter");
+		} else if (state == SOLD_OUT) {
+			System.out.pritln("You turned, but there are no gumballs");
+		} else if (state == HAS_QUARTER) {
+			System.out.pritln("You turned...");
+			state = SOLD;
+			dispense();
+		}
+	}
+	
+	public void dispense() {
+		if (state == SOLD) {
+			System.out.pritln("A gumball comes rolling out the slot");
+			count = count - 1;
+			if (count == 0) {
+				System.out.println(Oops, out of gumballs!);
+				state = SOLD_OUT;
+			} else {
+				state = NO_QUARTER;
+			}
+		} else if (state == NO_QUARTER) {
+			System.out.pritln("You need to pay first");
+		} else if (state == SOLD_OUT) {
+			System.out.pritln("No gumball dispensed");
+		} else if (state == HAS_QUARTER) {
+			System.out.pritln("No gumball dispensed");
+		}
+	}
+	
+	//这里是像toString()和refill()的其他的方法
+	
+}
+```
 
+***状态模式***允许对象在内部状态改变时改变它的行为，对下个看起来好像修改了他的类。
 
+要点：
+- 状态模式允许一个对象基于内部状态而拥有不同的行为。
+- 和程序状态机（PSM）不同，状态模式用类代表状态。
+- Context会将行为委托给当前状态对象。
+- 通过将每个状态封装进一个类，我们把以后需要做的任何改变局部化了。
+- 状态模式和策略模式有相同的类图，但是它们的意图不同。
+- 策略模式通常会用行为或算法来配置Context类。
+- 状态模式允许Context随着状态的改变而改变行为。
+- 状态转换可以由State类或Context类控制。
+- 使用状态模式通常会导致设计中类的数目大量增加。
+- 状态类可以被多个Context实例共享。
 
-
-
-
+---
+代理模式：控制对象访问
+---
 
 
 
