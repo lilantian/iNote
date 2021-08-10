@@ -1279,16 +1279,95 @@ public class GumballMachine {
 - 使用状态模式通常会导致设计中类的数目大量增加。
 - 状态类可以被多个Context实例共享。
 
----
+
 代理模式：控制对象访问
 ---
 
+你的客户对象所做的就像是在做远程方法调用，但其实只是调用本地堆中的“代理”对象上的方法，再由代理处理所有网络通信的底层细节。  
 
+Java RMI  
+RMI提供了客户辅助对象和服务辅助对象，为客户辅助对象创建和服务对象相同的方法。RMI的好处在于你不必亲自写任何网络或I/O代码。客户程序调用远程方法（即真正的服务所在）就和在运行在客户自己的本地JVM上对对象进行正常方法调用一样。  
+RMI也提供了所有运行时的基础设施，好让这一切正常工作。这包括了查找服务（lookup service），这个服务用来寻找和访问远程对象。  
+关于RMI调用和本地（正常的）的方法调用，有一个不同点。虽然调用远程方法就如同调用本地方法一样，但是客户辅助对象会通过网络发送方法调用，所以网络和I/O的确时存在的。关于网络和I/O部分，我们知道写什么？  
+我们知道网络和I/O是有风险的，容易失败，所以随时都可能抛出异常，也因此，客户必须意识到风险的存在。  
+RMI称呼（译注：terminology，术语，重点在概念本身；nomenclature，称呼，重点在概念上贴的标签）：RMI将客户辅助对象成为stub（桩），服务辅助对象成为skeleton（骨架）。  
 
+制作远程服务  
+1. 制作远程接口
+	1. 扩展java.rmi.Remote。
+	```java
+	public interface MyRemote extends Remote{}
+	```
+	2. 声明所有的方法都会抛出RemoteException。
+	```java
+	import java.rmi.*
+	public interface MyRemote extends Remote{
+		public String sayHello() throws RemoteException;
+	}
+	```
+	3. 确定变量和返回值是属于原语（primitive）类型或者可序列化（Serializable）类型。
+2. 制作远程的实现
+	1. 实现远程接口。
+	```java 
+	public class MyRemoteTmpl extends UnicastRemoteObject implements MyRemote {
+		public String sayHello() {
+			return "Server says,'Hey'";
+		}
+		//...
+	}
+	```
+	2. 扩展UnicastRemoteObject。
+	```java 
+		public class MyRemoteTmpl extends UnicastRemoteObject implements MyRemote {
+	```
+	3. 设计一个不带变量的构造器，并声明RemoteException.
+	```java
+	public MyRemoteImpl() throws RemoteException {}
+	```
+	4. 用RMI Registry注册此服务。
+	```java
+	try {
+		MyRemote service = new MyRemoteImpl();
+		Naming.rebind("RemoteHello", service);
+	} catch(Exception ex) {
+		...
+	}
+	```
+3. 利用rmic产生的stub和skeleton
+	在远程实现类（不是远程接口）上执行rmic
+4. 启动RMI registry（rmiregistry）
+	开启一个终端，启动rmiregistry
+5. 开始远程服务
+	开启一个终端，启动服务
 
+服务端的完整代码  
+```java
+//远程接口
+import java.rmi.*;
+public interface MyRemote extends Remote {
+	public String sayHello() throws RemoteException;
+}
 
-
-
+//远程服务（实现）
+import java.rmi.*;
+import java.rmi.server.*;
+public class MyRemoteImpl extends UnicastRemoteObject implements MyRemote {
+	public String sayHello() {
+		return "Server says, 'Hey'"
+	}
+	
+	public MyRemoteImol() throws RemoteException{}
+	
+	public static void main(Stirng[] args) {
+		try {
+			MyRemote service = new MyRemoteImpl();
+			Naming.rebind("RempteHello", service);
+		} catch(Exception ex) {
+			ex.printStackTrace();
+		}
+	}
+}
+```
 
 
 
