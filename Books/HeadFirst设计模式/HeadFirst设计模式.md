@@ -1368,6 +1368,187 @@ public class MyRemoteImpl extends UnicastRemoteObject implements MyRemote {
 	}
 }
 ```
+```java
+//完整的客户代码
+import java.rmi.*;
+public class MyRemoteClient {
+	public static void main(String[] args) {
+		new MyRemoteClient().go();
+	}
+	
+	public void go() {
+		try {
+			MyRemote service = (MyRemote)Naming.lookup(rmi://127.0.0.1/RemoteHello);
+			String s = service.sayHello();
+			System.out.ptintln(s);
+		} catch(Exception e) {
+			e.printStackTrace();
+		}
+	}
+}
+```
+
+***代理模式为另一个对象提供一个替身或占位符以控制对这个对象的访问***  
+使用代理模式创建代表（representative）对象，让代表对象控制某对象的范文，被代理的对象可以是远程的对象、创建开销大的对象那个或需要安全控制的对象。  
+
+远程代理：  
+	远程代理可以作为另一个JVM上对象的本地代表。调用代理的方法，会被代理利用网络转发到远程执行，并且结果会通过网络返回给代理，再由代理将结果转给客户。  
+
+虚拟代理：  
+	虚拟代理作为创建开销大的对象的代表。虚拟代理经常知道我们真正需要用给对象的时候才创建它。当对象在创建前和创建中时，由虚拟机代理来扮演对象的替身。对象创建后，代理就会将请求直接委托给对象。  
+	
+显示CD封面  
+  展示最喜欢的CD封面。建立一个CD标题菜单，然后从Amazon.com等网站的在线服务中取得CD封面的图。限于链接贷款和网络负载，下载可能需要一些时间，所以在等待图像加载的时候，应该显示一些东西。我们也不希望在等待图像时整个应用程序被挂起。一旦图像被加载完成，刚才显示的东西应该消失，图像显示出来。  
+
+ImageProxy如何工作：  
+1. ImageProxy首先创建要给ImageIcon，然后开始从网络URL上加载图像。
+2. 在加载的过程中，ImageProxy显示“CD封面加载中，请稍后...”。
+3. 当图像加载完毕，ImageProxy把所有方法调用委托给真正的ImageIcon，这些方法包括了paintIcon()，getWidth()和getHeight()。
+4. 如果用户请求新的图像，我们就创建新的代理，重复这样的过程。
+
+```java
+class ImageProxy implements Icon {
+	ImageIcon imageIcon;
+	URL imageURL;
+	Thread retrievalThread;
+	boolean retrieving = false;
+	
+	public ImageProxy(URL url) {
+		imageURL = url;
+	}
+	
+	public int getIconWidth() {
+		if (imageIcon != null) {
+			return imageIcon.getIconWidth();
+		} else {
+			return 800;
+		}
+	}
+	
+	public int getIconHeight() {
+		if (imageIcon != null;) {
+			return imageIcon.getIconHeight();
+		} else {
+			return 600;
+		}
+	}
+	
+	public void paintIcon(final Commponent c, Graphics g, int x, int y) {
+		if (imageIcon != null) {
+			imageIcon.paintIcon(c, g, x, y);
+		} else {
+			g.drawString("Loading CD cover, please wait...", x+300, y+190)
+			if (!retrieving) {
+				retrieving = true;
+				retrievalThread = new Thread(new Runable(){
+					public void run() {
+						try {
+							imageIcon = new ImageIcon(imageURL, "CD Cover");
+							c.repaint();
+						} catch(Exception e) {
+							e.printStackTrace();
+						}
+					}
+				});
+				retrievalThread.start();
+			}
+		}
+	}
+}
+```
+```java
+import java.lang.reflect.*;
+public class OwnerInvocationHandler implements InvocationHandler {
+	PersonBean person;
+	
+	public OwnerInvocationHandler(PersonBean person) {
+		this.person = person;
+	}
+	
+	public Object invoke(Object proxy, Method method, Object[] args) throws IllegalAccessException {
+		try {
+			if (method.getName().startsWith("get")) {
+				return method.invoke(person, args);
+			} else if(method.getName().equals("setHotOrNotRating")) {
+				throws new IllegalAccessException();
+			} else if(method.getName().startsWith("set")) {
+				return method.invoke(person, args);
+			}
+		} catch (InvocationTragetException e) {
+			e.printStachTrace();
+		}
+		return null;
+	}
+}
+```
+```java
+PersonBean getOwnerProxy(PersonBean person) {
+	return (PersonBean) Proxy,newProxyInstance(
+		person.getClass().getClassLoader(), 
+		person.getClass().getInterfaces(), 
+		new OwnerInvocationHandler(person));
+}
+```
+```java
+public class MatchMakingTestDrive {
+	public static void main(String[] args) {
+		MatchMakingTestDrive test = new MatchMakingTestDrive();
+		test.drive();
+	}
+	
+	public MatchMakingTestDrive() {
+		initializeDatabase();
+	}
+	
+	public void drive() {
+		PersonBean joe = getPersonFromDatabase("Joe Javabean");
+		PersonBean ownerProxy = getOwnerProxy(joe);
+		System.out.println("Name is " + ownerProxy.getName());
+		ownerProxy.setINterests("bowling, Go");
+		System.out.println("Interests set from owner pRoxy");
+		try {
+			ownerProxy.setHotOrNotRating(10);
+		} catch(Exception e) {
+			System.out.println("Can't set rating from owner proxy");
+		}
+		System.out.println("Rating is " + ownerProxy.getHotOrNotRating);
+		
+		PersonBean nonOwnerProxy = getNonOwnerProxy(joe);
+		System.out.println("Name is " + nonOwnerProxy.getName());
+		try {
+			nonOwnerProxy.setInterests("bowling, Go");
+		} catch(Exception e) {
+			System.out.println("Can't set interests form non owner proxy");
+		}
+		nonOwnerProxy.setHotOrNotRating(3);
+		System.out.println("Rating set from non Owner proxy");
+		System.out.println("Rating is " + nonOwnerProxy.getHotOrNotRating());
+	}
+	//...
+}
+```
+
+- 防火墙代理（Firwall Proxy）控制网络资源的额访问，保护主题免于“坏客户”的侵害。  
+- 智能引用代理（Smart Reference Proxy）当主题被引用时，进行额外的动作，例如计算一个对象被引用的次数。  
+- 缓存代理（Caching Proxy）为开销大的运算结果提供暂时存储：它也允许多个客户共享结果，以减少计算或网络延迟。  
+- 同步代理（Synchronization Proxy）在多线程的情况下为主题提供安全的访问。  
+- 复杂隐藏代理（Complexity Hiding Proxy）用来隐藏一个类的复杂集合的复杂度，并进行访问控制。有时候也称为外观代理（Facade Proxy），这不难理解。复杂隐藏代理和外观模式是不一样的，因为代理控制的访问，而外观模式只提供另一组接口。  
+- 写入时复制代理（Copy-On-Write Proxy）用来控制对象的复制，方法是延迟对象的复制，知道客户真的需要位置。这是虚拟代理的变体。  
+
+要点：  
+- 代理模式为另一个对象提供一个替身或占位符以访问这个对象。
+- 代理模式为另一个对象提供代表，以便控制客户对对象的访问，管理访问的方式有许多种。
+- 远程代理管理客户和远程对象之间的交互。
+- 虚拟代理控制访问实例化开销大的对象。
+- 保护代理基于调用者控制对对象方法的访问。
+- 代理模式有许多变体，例如：缓存代理、同步代理、防火墙代理和写入时复制代理。
+- 代理在结构上类似装饰着，但是目的不同。
+- 装饰着模式为对象加上行为，而代理则是控制访问。
+- Java内置的代理支持，可以根据需要建立动态代理，并将所有调用分配到所选的处理器。
+- 就和其他的包装者（wrapper）一样，代理会造成你的设计中类的数目增加。
+
+复合模式：模式的模式
+---
 
 
 
