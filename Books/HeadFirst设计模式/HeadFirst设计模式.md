@@ -1549,6 +1549,410 @@ public class MatchMakingTestDrive {
 
 复合模式：模式的模式
 ---
+**模式通常被一起使用，并被组合在同一个设计解决方案中。**  
+**符合模式在一个解决方案中结合两个或多个模式，以解决一般或重复发生的问题。**  
+
+```java
+//1.创建一个Quackable接口
+public interface Quackable {
+	public void quack();
+}
+
+//2.某些鸭子实现了Quackable接口
+public class MallardDuck implements Quackable {
+	public void quack() {
+		System.out.println("Quack");
+	}
+}
+
+public class RedheadDuck implements Quackable {
+	public void quack() {
+		System.out.println("Quack");
+	}
+}
+
+public class DuckCall implements Quackable {
+	public void quack() {
+		System.out.println("Kwak");
+	}
+}
+
+public class RubberDuck implements Quackable {
+	public void quack() {
+		System.out.println("Squack");
+	}
+}
+
+//3.模拟器
+public class DuckSimulator {
+	public static void main(String[] args) {
+		DuckSimulator simulator = new DuckSimulator();
+		simulator.simulate();
+	}
+	
+	void simulate() {
+		Quackable mallarDuck = new MallardDuck();
+		Quackable redheadDuck = new RedheadDuck();
+		Quackable duckCall = new DuckCall();
+		Quackable rubberDuck = new RubberDuck();
+		
+		System.out.println("\nDuck Simulator");
+		
+		simulate(mallarDuck);
+		simulate(redheadDuck);
+		simulate(duckCall);
+		simulate(rubberDuck);
+	}
+	
+	void simulate(Quackable duck) {
+		duck.quack();
+	}
+}
+
+//4.鹅
+public class Goose {
+	public void honk() {
+		System.out.println("Honk");
+	}
+}
+
+//5.鹅适配器
+public class GooseAdapter implements Quackable {
+	Goose goose;
+	
+	public GooseAdapter(Goose goose) {
+		this.goose = goose;
+	}
+	
+	public void quack() {
+		goose.honk();
+	}
+}
+
+//6.模拟中使用鹅
+public class DuckSimulator {
+	public static void main(String[] args) {
+		DuckSimulator simulator = new DuckSimulator();
+		simulator.simulate();
+	}
+	void simulate() {
+		Quackable mallardDuck = new MallardDuck();
+		Quackable redheadDuck = new RedheadHuck();
+		Quackable duckCall = new DuckCall();
+		Quackable rubberDuck = new RunbberDuck();
+		Quackable gooseDuck = new GooseAdapter(new Goose());
+		
+		System.out.println("\nDuck Simulator: With Goose Adapter");
+		
+		simulate(mallardDuck);
+		simulate(redheadDuck);
+		simulate(duckCall);
+		simulate(rubberDuck);
+		simulate(gooseDuck);
+	}
+	
+	void simulate(Quackable duck) {
+		duck.quack();
+	}
+}
+
+//7.测试
+
+//8.叫声的次数
+public class QuackCounter implements Quackable {
+	Quackable duck;
+	static int numberOfQuacks;
+	
+	public QuackCount(QUackable duck) {
+		this.duck = duck;
+	}
+	
+	public void quack() {
+		duck.quack();
+		numberOfQuacks++;
+	}
+	
+	public static int getQuacks() {
+		return numberOfQuacks;
+	}
+}
+
+//9.更新模拟器
+public class DuckSimulator {
+	public static void main(String[] args) {
+		DuckSimulator simulator = new DuckSimulator();
+		simulator.simulate();
+	}
+	void simulate() {
+		Quackable mallardDuck = new QuackCounter(new MallardDuck());
+		Quackable redheadDuck = new QuackCounter(new RedheadHuck());
+		Quackable duckCall = new QuackCounter(new DuckCall());
+		Quackable rubberDuck = new QuackCounter(new RunbberDuck());
+		Quackable gooseDuck = new GooseAdapter(new Goose());
+		
+		System.out.println("\nDuck Simulator: With Goose Adapter");
+		
+		simulate(mallardDuck);
+		simulate(redheadDuck);
+		simulate(duckCall);
+		simulate(rubberDuck);
+		simulate(gooseDuck);
+		
+		System.out.println("The ducks quacked " + QuackCounter.getQuacks() + " times");
+	}
+	
+	void simulate(Quackable duck) {
+		duck.quack();
+	}
+}
+
+//10.工厂产生鸭子
+public abstract class AbstractDuckFactory {
+	public abstract Quackable createMallardDuck();
+	public abstract Quackable createRedheadDuck();
+	public abstract Quackable createDuckCall();
+	public abstract Quackable createRubberDuck();
+}
+
+public class DuckFactory extends AbstractDuckFactory {
+	public Quackable createMallardDuck() {
+		return new MallardDuck();
+	}
+	
+	public Quackable createRedheadDuck() {
+		return new RedheadHuck();
+	}
+	
+	public Quackable createDuckCall() {
+		return new DuckCall();
+	}
+	
+	public Quackable createRubberDuck() {
+		return new RunbberDuck();
+	}
+}
+
+public class CountingDuckFactory extends AbstractDuckFactory {
+	public Quackable createMallardDuck() {
+		return new QuackCounter(new MallardDuck());
+	}
+	
+	public Quackable createRedheadDuck() {
+		return new QuackCounter(new RedheadHuck());
+	}
+	
+	public Quackable createDuckCall() {
+		return new QuackCounter(new DuckCall());
+	}
+	
+	public Quackable createRubberDuck() {
+		return new QuackCounter(new RunbberDuck());
+	}
+}
+
+//11.设置模拟器使用这个工厂
+public class DuckSimulator {
+	public static void main(String[] args) {
+		DuckSimulator simulator = new DuckSimulator();
+		AbstractDuckFactory duckFactory = new CountingDuckFactory();
+		
+		simulator.simulate(duckFactory);
+	}
+	
+	void simulator(AbstractDuckFactory duckFactory) {
+		Quackable mallardDuck = duckFactory.createMallardDuck();
+		Quackable redHeadDuck = duckFactory.createRedheadDuck();
+		Quackable duckCall = duckFactory.createDuckCall();
+		Quackable rubberDuck = duckFactory.createRubberDuck();
+		Quackable gooseDuck = new GooseAdapter(new Goose());
+		
+		System.out.println("\nDuck Simulator: With Abstract Fatory");
+		
+		simulate(mallardDuck);
+        simulate(redHeadDuck);
+        simulate(duckCall);
+        simulate(rubberDuck);
+        simulate(gooseDuck);
+		
+		System.out.println("The ducks quacked " + QuackCounter.getQuacks() + " times");
+	}
+	
+	void simulate(Quackable duck) {
+		duck.quack();
+	}
+}
+
+//12.创建一群鸭子（实际上是一群Quackable）
+public class Flock implements Quackable {
+	ArrayList quackers = new ArrayList();
+	
+	public void add(Quackable quacker) {
+		quackers.add(quacker);
+	}
+	
+	public void quack() {
+		Iterator iterator = quackers.iterator();
+		while (iterator.hasNext()) {
+			Quackable quacker = (Quackable)iterator.next();
+			quacker.quack();
+		}
+	}
+}
+
+//13.修改模拟器
+public class DuckSimulator {
+	//这里是主要方法
+	
+	void simulator(AbstractDuckFactory duckFactory) {
+		Quackable redHeadDuck = duckFactory.createRedheadDuck();
+		Quackable duckCall = duckFactory.createDuckCall();
+		Quackable rubberDuck = duckFactory.createRubberDuck();
+		Quackable gooseDuck = new GooseAdapter(new Goose());
+		System.out.println("\nDuck Simulator: With Composite - Flocks");
+		
+		Flock flockOfDucks = new Flock();
+        flockOfDucks.add(redHeadDuck);
+        flockOfDucks.add(duckCall);
+        flockOfDucks.add(rubberDuck);
+        flockOfDucks.add(gooseDuck);
+
+        Flock flockOfMallards = new Flock();
+        Quackable mallardOne = duckFactory.createMallardDuck();
+        Quackable mallardTow = duckFactory.createMallardDuck();
+        Quackable mallardThree = duckFactory.createMallardDuck();
+        Quackable mallardFour = duckFactory.createMallardDuck();
+
+        flockOfMallards.add(mallardOne);
+        flockOfMallards.add(mallardTow);
+        flockOfMallards.add(mallardThree);
+        flockOfMallards.add(mallardFour);
+
+        flockOfDucks.add(flockOfMallards);
+		
+		System.out.println("\nDuck Simulator: Whole Flock Simulation");
+		simulate(flockOfDucks);
+		
+		System.out.println("\nDuck Simulator: Mallard Flock Simulation");
+		simulate(flockOfMallards);
+		
+		System.out.println("\nThe ducks quacked " + QuackCounter.getQuacks() + " times");
+	}
+	
+	void simulate(Quackable duck) {
+		duck.quack();
+	}
+}
+
+//14.Observable接口
+public interface QuackObservalbe {
+	public void registerObservable(Observable observer);
+	public void notifyObservers();
+}
+
+public interface Quackable extends QuackObservable {
+	public void quack();
+}
+
+//15.确定所有实现Quackable的具体类都能够扮演QuackObservable的角色
+public class Observable implements QuackObservable {
+	ArrayList observers = new ArrayList();
+	QuackObservable duck;
+	
+	public Observable(QuackObservable duck) {
+		this.duck = duck;
+	}
+	
+	public void registerObserver(Observer observer) {
+		observer.add(observer);
+	}
+	
+	public void notifyObservers() {
+		Iterator iterator = observers.iterator();
+		while (iterator.hasNext()) {
+			Observer observer = (Observer)iterator.next();
+			observer.update(duck);
+		}
+	}
+}
+
+//16.整合Observable辅助类和Quackable类
+public class MallardDuck implements Quackable {
+	Observable observable;
+	
+	public MallardDuck() {
+		observable = new Observable();
+	}
+	
+	public void quack() {
+		System.out.println("Quack");
+		notifyObserver();
+	}
+	
+	public void registerObserver(Observer observer) {
+		observable.registerObserver(observer);
+	}
+	
+	public void notifyObservers() {
+		observable.notifyObservers();
+	}
+}
+
+//17.模式的Observer端
+public interface Observer {
+	public void update(QuackObservable duck);
+}
+
+public class Quackologis implements Observer {
+	public void update(QuackObservable duck) {
+		System.out.println("Quackologis: " + duck + "just quacked.");
+	}
+}
+
+//18.开始观察，更新模拟器
+public class DuckSimulator {
+	public static void main(String[] args) {
+		DuckSimulator simulator = new DuckSimulator();
+		AbstractDuckFactory duckFactory = new CountingDuckFactory();
+		
+		simulator.simulate(duckFactory);
+	}
+	
+	void simulator(AbstractDuckFactory duckFactory) {
+		//这里创建鸭子工厂和鸭子
+		//这里创建群
+		
+		System.out.println("\nDuck Simulator: With Abstract Fatory");
+		Quackologist quackologist = new Quackologist();
+		flockOfDucks.registerObserver(quackologist);
+		simulate(flockOfDucks);
+		
+		System.out.println("The ducks quacked " + QuackCounter.getQuacks() + " times");
+	}
+	
+	void simulate(Quackable duck) {
+		duck.quack();
+	}
+}
+```
+
+***符合模式：Model-View-Controller***  
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 
