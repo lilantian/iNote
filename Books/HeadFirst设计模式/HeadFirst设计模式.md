@@ -1935,24 +1935,327 @@ public class DuckSimulator {
 }
 ```
 
-***符合模式：Model-View-Controller***  
+***复合模式：Model-View-Controller***  
 
+- 视图：用来呈现模型。视图通常直接从模型中取得它需要显示的状态与数据。
+- 控制器：取得用户的输入并解读其对模型的意思。
+- 模型：模型持有所有的数据、状态和程序逻辑。模型没有注意到视图和控制器，虽然它提供了操纵和检索状态的接口，并发送状态改变通知给观察者。
 
+模型利用“观察者”让控制器和视图可以随最新的状态改变而更新。另一方面，视图和控制器则实现了“策略模式”。控制器是视图的行为，如果你希望有不同的行为，可以直接换一个控制器。视图内部使用组合模式来管理窗口、按钮以及其他显示组件。  
 
+```java
+public interface BeatModelInterface {
+	void initialize();
+	
+	void on();
+	
+	void off();
+	
+	void setBPM(int bpm);
+	
+	int getBPM();
+	
+	void registerObserver(BeatObserver o);
+	
+	void removeObserver(BeatObserver o);
+	
+	void registerObserver(BPMObserver o);
+	
+	void removeObserver(BPMObserver o);
+}
 
+public class BeatModel implements BeatModelInterface, MetaEventListener {
+	Sequencer sequencer;
+	ArrayList beatObservers = new ArrayList();
+	ArrayList bpmObservers = new ArrayList();
+	int bpm = 90;
+	//其他变量
+	
+	public void initialize() {
+		setUpMidi();
+		buildTrackAndStart();
+	}
 
+	public void on() {
+		sequencer.start();
+		setBPM(90);
+	}
 
+	public void off() {
+		setBPM(0);
+		sequencer.stop();
+	}
 
+	public void setBPM(int bpm) {
+		this.bpm = bpm;
+		sequencer.setTempoInBPM(getBPM());
+		notifyBPMObservers();
+	}
 
+	public int getBPM() {
+		return bpm;
+	}
+	
+	void beatEvent() {
+		notifyBeatObservers();
+	}
+	
+	//注册观察者、通知观察者的代码
+	
+	//处理节拍的MIDI代码
+}
 
+public class DJView implements ActionListener, BeatObserver, BPMObserver {
+	BeatModelInterface model;
+	ControllerInterface controller;
+	JFrame viewFrame;
+	JPanel viewPanel;
+	BeatBar beatBar;
+	JLabel BPMOutputLabel;
+	
+	public DJView(ControllerInterface controller, BeatModelInterface model) {
+		this.controller = controller;
+		this.model = model;
+		model.registerObserver((BeatObserver)this);
+		model.registerObserver((BPMObserver)this);
+	}
+	
+	public void createView() {
+		//在这里创建所有的Swing组件
+	}
+	
+	public void updateBPM() {
+		int bpm = model.getBPM();
+		if (bpm == 0) {
+			bpmOUtputLabel.setText(offline);
+		} else {
+			bpmOutputLabel.setText("Current BPM: " + model.getBPM());
+		}
+	}
+	
+	public void updateBeat() {
+		beatVar.setValue(100);
+	}
+}
 
+public class DJView implements ActionListener, BeatObserver, BPMObserver {
+	BeatModelInterface model;
+	ControllerInterface controller;
+	JLabel bpmLabel;
+	JTextField bpmTextField;
+	JButton setBPMButton;
+	JButton increaseBPMButton;
+	JButton decreaseBPMButton;
+	JMenuBar menuBar;
+	JMenu menu;
+	JMenuItem startMenuItem;
+	JMenuItem stopMenuItem;
+	
+	public void createVontrols() {
+		//在这里创建所有的Swing组件
+	}
+	
+	public　void enableStopMenuItem() {
+		stopMenuItem.setEnabled(true);
+	}
+	
+	public　void disableStopMenuItem() {
+		stopMenuItem.setEnabled(false);
+	}
+	
+	public　void enableStartMenuItem() {
+		stopMenuItem.setEnabled(true);
+	}
+	
+	public　void disableStartMenuItem() {
+		stopMenuItem.setEnabled(false);
+	}
+	
+	public void actionPerformed(ActionEvent event) {
+		if (event.getSource() == setBPMButton) {
+			int bpm = Integer.parseInt(bpmTextField.getText());
+			controller.setBPM(bpm);
+		} else if (event.getSource() == increaseBPMButton) {
+			controller.increaseBPM();
+		} else if (event.getSource() == decreaseBPMButton) {
+			controller.decreaseBPM();
+		}
+	}
+}
 
+public interface COntrollerInterface {
+	void start();
+	void stop();
+	void increaseBPM();
+	void decreaseBPM();
+	void setBPM(int bpm);
+}
 
+public class BeatController implements ControllerInterface {
+	BeatModelInterface moel;
+	DJView view;
+	
+	public BeatController(BeatModelInterface model) {
+		this.model = model;
+		view = new DJView(this, model);
+		view.createView();
+		view.createControls();
+		view.disableStopMenuItem();
+		view.enableStopMenuItem();
+		model.initialize();
+	}
+	
+	public void start() {
+		model.on();
+		view.disableStartMenuItem();
+		view.enableStopMenuItem();
+	}
+	
+	public void stop() {
+		model.off();
+		view.disableStopMenuItem();
+		view.enableStartMenuItem();
+	}
+	
+	public void increaseBPM() {
+		int bpm = nodel.getBPM();
+		model.setBPM(bpm + 1);
+	}
+	
+	public void decreaseBPM() {
+		int bpm = nodel.getBPM();
+		model.setBPM(bpm - 1);
+	}
+	
+	public void setBPM(int bpm) {
+		model.setBPM(bpm);
+	}
+}
+```
+```java
+//适配模型
+public class HeartAdapter implements BeatModelInterface {
+	HeartModelInterface heart;
+	
+	public HeartAdapter(BeatModelInterface heart) {
+		this.heart = heart;
+	}
+	
+	public void initialize() {}
+	
+	public void on() {}
+	
+	public void off() {}
+	
+	public int getBPM() {
+		return heart.getHeartRate();
+	}
+	
+	public void registerObserver(BeatObserver o) {
+		heart.registerObserver(o);
+	}
+	
+	public void removeObserver(BeatObserver o) {
+		heart.removeObserver(o);
+	}
+	
+	public void registerObserver(BPMObserver o) {
+		heart.registerObserver(o);
+	}
+	
+	public void removeObserver(BPMObserver o) {
+		heart.removeObserver(o);
+	}
+}
 
+public class HeartController implements ControllerInterface {
+	HeartModelInterface model;
+	DJView view;
+	
+	public HeartVontroller(HeartModelInterface model) {
+		this.model = model;
+		view = new DJView(this, new HeartAdapter(model));
+		view.createView();
+		view.createControls();
+		view.disableStopMenuItem();
+		view.enableStopMenuItem();
+	}
+	
+	public void start() {}
+	
+	public void stop() {}
+	
+	public void increaseBPM() {}
+	
+	public void decreaseBPM() {}
+	
+	public void setBPM(int bpm) {}
+}
 
+public class HeartTestDrive {
+	public static void main(String[] args) {
+		HeartModel heartModel = new HeartModel();
+		ControllerInterface model = new HeartController(heartModel);
+	}
+}
+```
 
+![image-20210812154655301](HeadFirst设计模式.assets/image-20210812154655301.png)
 
+```java
+public class DJView extends HttpServlet {
+	BeatModel beatModel = new BeatModel();
+	beatModel.initialize();
+	getServletContext().setAttribute("beatModel", beatModel);
+	
+	//doPost()
+	
+	public void doGet(HttpServletRequest request, HttpServletResponse response) throws IOException, ServletException {
+		BeatModel beatModel = (BeatModel)getServletContext().getAttribute("beatModel");
+		
+		String bpm = request.getParameter("bpm");
+		if (bpm == null) {
+			bpm = beatModel.getBPM() + "";
+		}
+		
+		String set = request.getParameter("set");
+		if (set != null) {
+			int bpmNumber = 90;
+			bpmNumber = Integer.parseInt(bpm);
+			beatModel.setBPM(bpmNumber);
+		}
+		
+		String decrease = request.getParameter("decrease");
+		if (decrease != null) {
+			beatModel.setBPM(beatModel.getBPM() - 1);
+		}
+		
+		String increase = request.getParameter("increase");
+		if (increase != null) {
+			beatModel.setBPM(beatModel.getBPM() + 1);
+		}
+		
+		String on = request.getParameter("on");
+		if (on != null) {
+			beatModel.start();
+		}
+		
+		String off = request.getParameter("off");
+		if (off != null) {
+			beatModel.stop();
+		}
+		
+		request.setAttribute("beatModel", beatModel);
+		
+		RequestDispatcher dispatcher = request.getRequestDispatcher("/jsp/DJView.jsp");
+		dispatcher.forward(request, response);
+	}
+}
+```
 
+![image-20210812163323766](HeadFirst设计模式.assets/image-20210812163323766.png)
+
+557
 
 
 
